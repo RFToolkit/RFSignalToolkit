@@ -17,7 +17,7 @@ class Analyse:
         self.signal = []
         self.secondLength = 0
         self.start_time = 0
-        self.dataset = None
+        self.dataset = []
 
         self.filteredFreq=(lambda omega, omegaFrequency, target=15000, window=2000: 
             [ [omega[i], freq] for i, freq in enumerate(omegaFrequency) if self.isInInterval(freq, target, window) ]
@@ -140,11 +140,6 @@ class Analyse:
                 sig=self.signalToDict( sig )
                 signal=sig.get('signal')[1:]
                 freq=sig.get('frequency')[1:]
-
-                #plt.plot(freq, signal.real, label="Signal")
-                #plt.show()
-                #f0=max(signal[1:])
-                #n=np.where(signal == f0)[0][0]
 
             return [ freq, signal ]
 
