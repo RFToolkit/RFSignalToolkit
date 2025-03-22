@@ -11,11 +11,12 @@ function runMouseDataTest() {
     curl http://0.0.0.0:5000/dynmagnet \
         -X POST -H 'content-type: application/json' \
         -H 'Accept: application/json' \
-    --data @./json/bluetooth.json
+    --data @./json/mouse.json
 }
 
 function main() {
-    #runTest
+    runTest
+    sleep 5
     runMouseDataTest
 }
 

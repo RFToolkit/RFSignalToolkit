@@ -34,17 +34,19 @@ class Analyse:
 
     """
         Transformer de fourier
-        Pour t fixer avec X=j2pift et A=amplitude(B) et B la norme du champ magnetique
+        A=amplitude(B), B magnetic field normal
+        e**2*pi*t*f(t) == e**X, with X = 2*pi*t*f(t) 
         on a f(t) = x(t) * (cos(X) - sin(X))
     """
     def f(self, A, t, Te, w=2*np.pi):
         return A * ( np.cos( w*t/Te ) - np.sin( w*t/Te ) ) # f(t) = A * e
 
     """
-        Signal recu
-        signal: Tableau de format f(t) = x(t) * (e**j2pift)
-        frequency: Tableau de frequence du signal recu
-        pure: signal without fourier 
+        Received signal analysis
+        @return: dict
+            signal: Array<complex> Array of f(t) = x(t) * (e**j2pift)
+            frequency: Array<float> Array of frequency from received signal
+            pure: Array<complex> signal without compression 
     """
     def getSignalFrom(self, A, fe=50000):
         signal, p=[], 0
@@ -61,11 +63,11 @@ class Analyse:
         }
 
     """
-        Filter Frequency make window
-        omega: Tableau de format f(t) = x(t) * (e**j2pift)
-        omegaFrenquency: Representation frequentiel d'Omega
-        target: Frequence cible
-        window: Fenetre d'exploitation
+        My signal
+        @return: Dict
+            frequency: Array<complex>
+            signal: Array<float>
+            pure: Array<complex>
     """
     def signalToDict(self, signal):
         x = {'signal': [], 'frequency': []}
@@ -74,19 +76,20 @@ class Analyse:
             x['frequency'].append(el[1])
 
         x['pure']=np.abs(x['signal'])
-        x['signal']=np.fft.fft(np.abs(x['signal']))
+        x['signal']=np.fft.fft(np.abs(x['signal']))-np.abs(x['signal']) # Experimental
         return x 
 
     
     """
-        Get Dataframe Magnet Value at specified second
-        second: number (time first to fetch dataframe value)
+        recover, compress and convert magnetic field data per second 
+        @return: Float
+            second: number (time first to fetch dataframe value)
     """
     def getSetBySecond(self, second):
         return self.dataset[(self.dataset["time"] > self.start_time + second) & (self.dataset["time"] < self.start_time + second + 1)]
     
     """
-        Champ magnetic normalisé
+        Magnetic field normal
     """
     def getMagneticFieldNormal(self):
         #magnet = [ x if type(x) == list else json.loads(x) for x in self.dataset['magnet']  ]
@@ -110,6 +113,7 @@ class Analyse:
         plt.show()
 
     """
+        Deprecated: Read from csv 
         Provide dataset Array<Magnet> or CSV
         name: if csv csv name
         B: if magnet Array value Array<Magnet>
@@ -125,11 +129,11 @@ class Analyse:
         Change Radio Fm station
         Fm station in hertz
     """
-    def changeFrequency(self, Fm=60): # 5.0 mhz
+    def changeFrequency(self, Fm=60, freqType='mhz'): # 5.0 mhz
         pound={ "khz": (10**3), "mhz": (10**6), "ghz": (10**9) }
-        Fm=Fm*pound['mhz']
+        Fm=Fm*pound[freqType]
         B=self.getMagneticFieldNormal()
-        sig=self.getSignalFrom(B, Fm*10)
+        sig=self.getSignalFrom(B, Fm*2)
         if type(sig["signal"]) != type(None):
             signal=sig.get('signal')
             freq=sig.get('frequency')
